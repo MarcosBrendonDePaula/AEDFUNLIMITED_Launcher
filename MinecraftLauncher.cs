@@ -139,7 +139,7 @@ namespace ML
                     webClient.DownloadProgressChanged += ProgressUpdate;
                     webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.base_site)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.base_Path)).Wait();
                     var installer = new Process();
-                    installer.StartInfo = new ProcessStartInfo(base_Path + "/EDGRUNTIME.exe");
+                    installer.StartInfo = new ProcessStartInfo(base_Path + "/EDGRUNTIME.exe", "/silent /install");
                     OnCoreUpdate(new Core_Event()
                     {
                         message = "Instalando o WebView2 1/2",
@@ -147,8 +147,10 @@ namespace ML
                     });
                     installer.Start();
                     installer.WaitForExit();
-                    MessageBox.Show("Intstalação do webview2 completa \nReabra o laucher para que tudo funcione normalmente.".ToUpper(), "INFO!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    Environment.Exit(0);
+                    //MessageBox.Show("Intstalação do webview2 completa \nReabra o launcher.".ToUpper(), "INFO!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    //Environment.Exit(0);
+                    Process.Start(Environment.CurrentDirectory + "\\"+ Process.GetCurrentProcess().ProcessName+".exe");
+                    Process.GetCurrentProcess().Kill();
                 }
                 catch (Exception e)
                 {

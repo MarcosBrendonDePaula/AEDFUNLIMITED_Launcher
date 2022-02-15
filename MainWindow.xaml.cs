@@ -83,7 +83,8 @@ namespace LauncherV1
             };
             Dispatcher.Invoke(atualiza);
         }
-
+        
+        //play button function
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if ((string)Bplay.Content != "Play")
@@ -101,6 +102,7 @@ namespace LauncherV1
             Bplay.Content = "Iniciando";
         }
 
+        //login button function
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
             User temp = new User(FEmail.Text, FSenha.Password);
@@ -147,7 +149,6 @@ namespace LauncherV1
             catch (Exception)
             {
                 MessageBox.Show(@"Ocorreu um erro ao tentar conectar tente novamente.".ToUpper(), "OPS!", MessageBoxButton.OK, MessageBoxImage.Error);
-                Console.WriteLine(@"Erro de Conexão");
             }
         }
 
@@ -190,7 +191,21 @@ namespace LauncherV1
             }
         }
 
-        private void CTRAM_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void CTARGS_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            config.Args = CTARGS.Text;
+            config.Save();
+        }
+
+        private void LOGOFFBTN_Click(object sender, RoutedEventArgs e)
+        {
+            LOGINPAINEL.Visibility = Visibility.Visible;
+            LOGGEDPAINEL.Visibility = Visibility.Hidden;
+            BLogar.Content = "Logar";
+            Bplay.IsEnabled = false;
+        }
+
+        private void Slider_Ram_Change(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (CTJAVA.Text != "")
             {
@@ -199,22 +214,17 @@ namespace LauncherV1
                     int ram = Convert.ToInt32(Slider_Ram.Value);
                     config.MAX_RAM = ram;
                     config.Save();
+                    Ram_Value.Content = config.MAX_RAM.ToString() + " MB";
                 }
                 catch (Exception)
                 {
                     config.Load();
                     Slider_Ram.Value = config.MAX_RAM;
-                    //CTRAM.Text = config.MAX_RAM.ToString();
                 }
             }
         }
 
-        private void CTARGS_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            config.Args = CTARGS.Text;
-            config.Save();
-        }
-
+        //addons functions
         private void BTexturePackDownload_Click(object sender, RoutedEventArgs e)
         {
             new Thread(() =>
@@ -298,37 +308,6 @@ namespace LauncherV1
             }).Start();
         }
 
-        private void Button_Click_2(object sender, RoutedEventArgs e)
-        {
 
-        }
-
-        private void LOGOFFBTN_Click(object sender, RoutedEventArgs e)
-        {
-            LOGINPAINEL.Visibility = Visibility.Visible;
-            LOGGEDPAINEL.Visibility = Visibility.Hidden;
-            BLogar.Content = "Logar";
-            Bplay.IsEnabled = false;
-        }
-
-        private void Slider_Ram_Change(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (CTJAVA.Text != "")
-            {
-                try
-                {
-                    int ram = Convert.ToInt32(Slider_Ram.Value);
-                    config.MAX_RAM = ram;
-                    config.Save();
-                    Ram_Value.Content = config.MAX_RAM.ToString() + " MB";
-                }
-                catch (Exception)
-                {
-                    config.Load();
-                    Slider_Ram.Value = config.MAX_RAM;
-                    //CTRAM.Text = config.MAX_RAM.ToString();
-                }
-            }
-        }
     }
 }
