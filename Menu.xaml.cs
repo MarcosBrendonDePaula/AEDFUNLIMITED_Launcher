@@ -3,12 +3,10 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Devices;
-using Microsoft.Web.WebView2.Core;
 using MessageBox = System.Windows.MessageBox;
 
 namespace LauncherV1
@@ -77,6 +75,12 @@ namespace LauncherV1
             {
                 if (ConsoleText.LineCount == config.MaxLogs)
                     ConsoleText.Clear();
+                if (ev.status == -900)
+                {
+                    IWEBVIEW_LABEL.Content = ev.message;
+                    IWEBVIEW_LABEL.Visibility = Visibility.Visible;
+                    WebBrowserMain.Visibility = Visibility.Hidden;
+                }
                 Bplay.Content = ev.message;
                 ConsoleText.AppendText(ev.message + "\n");
                 ConsoleText.ScrollToEnd();

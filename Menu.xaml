@@ -1,0 +1,191 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:LauncherV1"
+    
+        
+
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+    xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="LauncherV1.MainWindow"
+    mc:Ignorable="d"    
+
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.FontWeight="Regular"
+    TextElement.FontSize="13"
+    TextOptions.TextFormattingMode="Ideal"
+    TextOptions.TextRenderingMode="Auto"
+    Title="UNLIMITED LAUNCHER"
+    Background="{DynamicResource MaterialDesignPaper}"
+    FontFamily="{DynamicResource MaterialDesignFont}" ResizeMode="CanResizeWithGrip" Icon="icone.png" SizeToContent="Width" Width="881.6" Height="565.8">
+
+    <Grid MinWidth="800">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=".32*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height=".05*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.ColumnSpan="2" Grid.RowSpan="2" Visibility="Hidden" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="33*"/>
+                <ColumnDefinition Width="33*"/>
+                <ColumnDefinition Width="33*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+        </Grid>
+        <Grid Grid.Column="1" Grid.RowSpan="2" Background="LightBlue">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50*"/>
+                <RowDefinition Height="50*"/>
+            </Grid.RowDefinitions>
+            <TabControl Grid.Column="0" Grid.RowSpan="2" x:Name="Tcontrol" SelectionChanged="Tcontrol_SelectionChanged">
+                <TabItem x:Name="tabMenu" Header="Início" FontSize="16">
+                    <Grid Background="White">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Wpf:WebView2 Grid.Column="0" Grid.Row="0" x:Name="WebBrowserMain" Source="http://aedfunlimited.ddns.net:25569"/>
+                        <Label x:Name="IWEBVIEW_LABEL" Content="INICIALIZANDO" VerticalAlignment="Top" Background="{x:Null}" FontFamily="Candara" Visibility="Visible" FontSize="48"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Logs" FontSize="16">
+                    <Grid Background="White">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="100*"/>
+                        </Grid.RowDefinitions>
+                        <TextBox Grid.Column="0" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" x:Name="ConsoleText"  FontSize="10"/>
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="TabConfig" Header="Config" FontSize="16">
+                    <Grid Background="White">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width=".1*" />
+                            <ColumnDefinition Width=".7*" />
+                            <ColumnDefinition Width=".2*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height=".1*" />
+                            <RowDefinition Height=".1*" />
+                            <RowDefinition Height=".1*" />
+                            <RowDefinition Height=".7*" />
+                        </Grid.RowDefinitions>
+
+                        <Label VerticalAlignment="Center" Content="JAVA:" FontSize="18"/>
+                        <TextBox VerticalAlignment="Center" x:Name="CTJAVA" Grid.Column="1" KeyUp="CTJAVA_KeyUp" FontSize="14"/>
+                        <Button VerticalAlignment="Center" x:Name="BProcurarJava" Grid.Column="2" Click="BProcurarJava_Click">Procurar</Button>
+
+                        <Label VerticalAlignment="Center" Grid.Row="1" Content="RAM:" FontSize="18"/>
+                        <Slider x:Name="Slider_Ram" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" ValueChanged="Slider_Ram_Change" Margin="0,10,0,0"/>
+                        <Label x:Name="Ram_Value" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="2" Content="0 MB" FontSize="16" Margin="0,10,0,0"/>
+
+                        <Label VerticalAlignment="Center" Grid.Row="2" Content="ARGS:" FontSize="18" Margin="0,5,0,0" />
+                        <TextBox x:Name="CTARGS" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" KeyUp="CTARGS_KeyUp" Grid.ColumnSpan="2"/>
+
+                        <TabControl  Grid.ColumnSpan="3" Grid.Row="3">
+                            <TabItem Header="Addons Install" FontSize="20">
+                                <Grid Background="White">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="5*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="5*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <ProgressBar x:Name="PAddonDownloader"  Visibility="Hidden" Grid.Row="1" Height="Auto" Margin="10,9.8,9.6,10.4" FontSize="14" />
+                                    <Button x:Name="BTexturePackDownload" Content="Texture Pack" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="114" Click="BTexturePackDownload_Click" FontSize="14"/>
+                                    <Label x:Name="LAddonStatus" Content="Label"  Visibility="Hidden" Margin="234,9.8,9.8,10.8" Grid.Row="1" FontSize="16"/>
+                                    <Button x:Name="BShadersInstall" Content="Shaders" HorizontalAlignment="Left" Margin="142,10,0,0" VerticalAlignment="Top" Width="114" Click="BShadersInstall_Click"/>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Background="LightBlue">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25*"/>
+                <RowDefinition Height="40*"/>
+                <RowDefinition Height="35*"/>
+            </Grid.RowDefinitions>
+            <!-- Login stack painel-->
+            <StackPanel Grid.Row="1" x:Name="LOGINPAINEL" Orientation="Vertical" VerticalAlignment="Center">
+                <Grid Margin="10" Background="Azure" VerticalAlignment="Center" RenderTransformOrigin="1,0.5" Height="164">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Label Content="Email:"/>
+                    <TextBox x:Name="FEmail" Grid.Column="1" Margin="0.4,0,4,10.2" />
+                    <Label Grid.Row="1" Content="Senha:"/>
+                    <PasswordBox x:Name="FSenha" Grid.Column="1" Margin="0.4,34,4,9.8" Grid.RowSpan="2" />
+                    <CheckBox Grid.ColumnSpan="2" Grid.Row="2" x:Name="CGuardar" Content="Salvar Dados" Margin="0,0.2,0,0.4"/>
+                    <Button x:Name="BLogar" Grid.Row="3" Content="Logar" UseLayoutRounding="True" HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_Click_1" RenderTransformOrigin="0.465,1.767" Margin="26,16.6,18,20" Grid.ColumnSpan="2" Width="136" Height="41"/>
+                </Grid>
+            </StackPanel>
+            <!-- Logged stack painel-->
+            <Grid Grid.Row="1" x:Name="LOGGEDPAINEL" Margin="10,0,10,0"  Background="Azure" Visibility="Hidden">
+                <Grid.Resources>
+                    <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*" />
+                    <RowDefinition Height="50*" />
+                </Grid.RowDefinitions>
+                <Button x:Name="UserBtn" Content="User" Visibility="Visible" Margin="10,0,10,0"/>
+                <Button x:Name="LOGOFFBTN" Grid.Row="2" Content="Sair" VerticalAlignment="Top" Click="LOGOFFBTN_Click" Margin="50,0,50,0"></Button>
+            </Grid>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30*"/>
+                    <RowDefinition Height="20*"/>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="20*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="1" x:Name="Bplay" Content="Play" Click="Button_Click" IsEnabled="False" Margin="10,0,10,0"/>
+
+                <ProgressBar Grid.Row="3" x:Name="BProgress" Height="Auto" Margin="10,0,10,0"></ProgressBar>
+                <Label Grid.Row="3" x:Name="Pencent_Label" Content="0%" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,10,0"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

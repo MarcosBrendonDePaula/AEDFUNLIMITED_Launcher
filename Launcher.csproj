@@ -141,7 +141,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="User.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="Menu.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -150,8 +150,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="LauncherConfig.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Menu.xaml.cs">
+      <DependentUpon>Menu.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

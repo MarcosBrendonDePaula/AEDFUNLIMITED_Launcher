@@ -38,7 +38,6 @@ namespace ML
             return MinecraftLauncher.obj;
         }
 
-
         //events
         public event EventHandler HprogressBar;
         public event EventHandler HCoreUpdate;
@@ -56,7 +55,6 @@ namespace ML
             log.message = message;
             OnConsoleAppend(log);
         }
-
         protected virtual void OnCoreUpdate(Core_Event e)
         {
             EventHandler handler = HCoreUpdate;
@@ -75,11 +73,15 @@ namespace ML
         }
 
         public static string base_Path = Directory.GetCurrentDirectory() + @"/AEDFCLIENT";
-        public static string base_ip = Resources.IPHOST;
+        public static string base_ip   = Resources.IPHOST;
+        
+        
         //public static string base_ip = "aedfunlimited.ddns.net";
         public static string base_site = String.Format("http://{0}:25569", base_ip);
         public static string User = "";
         public static string Token = "";
+        public static bool x86 = false, x64 = false;
+
 
         public static bool CoreReady = false;
 
@@ -91,8 +93,6 @@ namespace ML
         private void CheckExistWebview()
         {
             string version = null;
-            var b64 = false;
-            var b32 = false;
             try
             {
                 version = CoreWebView2Environment.GetAvailableBrowserVersionString();
@@ -102,53 +102,58 @@ namespace ML
                 CoreLogg("ERR:" + e.Message);
             }
 
+            //detect if system is 64bits
             try
             { 
-                version =(string) Registry.LocalMachine.OpenSubKey(
+                
+                var temp = (string) Registry.LocalMachine.OpenSubKey(
                     @"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
-                b64 = true;
-                var x64 = new Core_Event();
-                x64.message = "WEBVIEW 64 BITS :" + b64;
-                OnConsoleAppend(x64);
-
+                MinecraftLauncher.x64 = true;
+                if(version == null)
+                    version = temp;
             }
             catch (Exception e)
             {
                 CoreLogg("ERR:" + e.Message);
             }
-
+            
+            //detect if system is 32bits
             try
             {
-                version = (string) Registry.LocalMachine.OpenSubKey(
+                var temp = (string) Registry.LocalMachine.OpenSubKey(
                     @"\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
-                b32 = true;
-                var x32 = new Core_Event();
-                x32.message = "WEBVIEW 32 BITS :" + b32;
-                OnConsoleAppend(x32);
+                MinecraftLauncher.x86 = true;
+                if (version == null)
+                    version = temp;
             }
             catch (Exception e)
             {
                 CoreLogg("ERR:" + e.Message);
             }
 
-            if (version == null && !b32 && !b64)
+            if (version == null && !MinecraftLauncher.x86 && !MinecraftLauncher.x64)
             {
                 try
                 {
+                    OnCoreUpdate(new Core_Event()
+                    {
+                        message = "Downloading WebView2",
+                        status = -900
+                    });
                     var webClient = new WebClient();
                     webClient.DownloadProgressChanged += ProgressUpdate;
                     webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.base_site)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.base_Path)).Wait();
+                    
                     var installer = new Process();
                     installer.StartInfo = new ProcessStartInfo(base_Path + "/EDGRUNTIME.exe", "/silent /install");
                     OnCoreUpdate(new Core_Event()
                     {
-                        message = "Instalando o WebView2 1/2",
-                        status = 0
+                        message = "Instalando o WebView2 1/2\n\tAGUARDE...",
+                        status = -900
                     });
+
                     installer.Start();
                     installer.WaitForExit();
-                    //MessageBox.Show("Intstalação do webview2 completa \nReabra o launcher.".ToUpper(), "INFO!", MessageBoxButton.OK, MessageBoxImage.Information);
-                    //Environment.Exit(0);
                     Process.Start(Environment.CurrentDirectory + "\\"+ Process.GetCurrentProcess().ProcessName+".exe");
                     Process.GetCurrentProcess().Kill();
                 }
@@ -160,7 +165,7 @@ namespace ML
                 }
             }
             var log = new Core_Event();
-            log.message = "WEBVIEW v" + version;
+            log.message = "WEBVIEW v." + version;
             OnConsoleAppend(log);
 
         }
@@ -377,7 +382,6 @@ namespace ML
 
         private async Task<bool> start()
         {
-
             try
             {
                 var config = LauncherConfig.Make();
@@ -390,8 +394,9 @@ namespace ML
                     Bpath = "\"" + Bpath + "\"";
                 }
                 
+                CoreLogg("B_PATH:" + Bpath);
                 CoreLogg("J_PATH:"+pathJava);
-                CoreLogg("B_PATH:"+Bpath);
+                
 
                 var args = new string[4];
                 args[0] = "-DmyArgument=" + MinecraftLauncher.Token + "::" + MinecraftLauncher.base_ip + ":25569" + "::" + MinecraftLauncher.User;
