@@ -5,7 +5,9 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Navigation;
 using Microsoft.VisualBasic.Devices;
 using MessageBox = System.Windows.MessageBox;
 
@@ -37,6 +39,20 @@ namespace LauncherV1
             mine.HCoreUpdate += UpdateCore;
             mine.HprogressBar += ProgressUpdate;
             mine.HConsoleAppend += ConsoleAppend;
+
+            try
+            {
+                WebClient webClient = new WebClient();
+                webClient.DownloadData(MinecraftLauncher.base_site);
+                OFFLINE_MESSAGE.Visibility = Visibility.Hidden;
+                Painel_Direito.Visibility = Visibility.Visible;
+            }
+            catch (Exception)
+            {
+                Painel_Direito.Visibility = Visibility.Hidden;
+                OFFLINE_MESSAGE.Visibility = Visibility.Visible;
+            }
+            
 
             new Thread(mine.Basic_Check_Download).Start();
         }
@@ -313,5 +329,13 @@ namespace LauncherV1
         }
 
 
+        private void Navigate_discord_link(object sender, RequestNavigateEventArgs e)
+        {
+
+            Grid_Principal.ColumnDefinitions[0].Width = new GridLength(0, GridUnitType.Star); ;
+            Grid_Principal.ColumnDefinitions[1].Width = new GridLength(100, GridUnitType.Star);
+            Painel_Direito.Visibility = Visibility.Visible;
+            WebBrowserMain.Source = new Uri("https://discord.gg/WsWb56jfBw");
+        }
     }
 }

@@ -21,7 +21,7 @@
     Background="{DynamicResource MaterialDesignPaper}"
     FontFamily="{DynamicResource MaterialDesignFont}" ResizeMode="CanResizeWithGrip" Icon="icone.png" SizeToContent="Width" Width="881.6" Height="565.8">
 
-    <Grid MinWidth="800">
+    <Grid x:Name="Grid_Principal" MinWidth="800">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width=".32*"/>
             <ColumnDefinition Width="*"/>
@@ -31,7 +31,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.ColumnSpan="2" Grid.RowSpan="2" Visibility="Hidden" >
+        <!-- Painel de conexão -->
+        <Grid x:Name="OFFLINE_MESSAGE" Grid.ColumnSpan="2" Grid.RowSpan="2" Visibility="Visible" ZIndex="30" Background="LightSteelBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="33*"/>
                 <ColumnDefinition Width="33*"/>
@@ -42,8 +43,19 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            <Image Grid.Column="1" Grid.Row="1"  Source="SemConexão.png"></Image>
+            <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" FontSize="36" TextAlignment="Center" TextWrapping="Wrap">
+                Sem Conexão.
+                <LineBreak/>
+                Caso o problema persista
+                <LineBreak/>
+                Entre em nosso
+                <LineBreak/>
+                <Hyperlink NavigateUri="https://discord.gg/WsWb56jfBw" RequestNavigate="Navigate_discord_link">Discord</Hyperlink>
+            </TextBlock>
         </Grid>
-        <Grid Grid.Column="1" Grid.RowSpan="2" Background="LightBlue">
+        <!-- Painel direito -->
+        <Grid x:Name="Painel_Direito" Grid.Column="1" Grid.RowSpan="2" Background="LightBlue" ZIndex="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100*"/>
             </Grid.ColumnDefinitions>
@@ -55,13 +67,14 @@
                 <TabItem x:Name="tabMenu" Header="Início" FontSize="16">
                     <Grid Background="White">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="71*"/>
+                            <ColumnDefinition Width="587*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Wpf:WebView2 Grid.Column="0" Grid.Row="0" x:Name="WebBrowserMain" Source="http://aedfunlimited.ddns.net:25569"/>
-                        <Label x:Name="IWEBVIEW_LABEL" Content="INICIALIZANDO" VerticalAlignment="Top" Background="{x:Null}" FontFamily="Candara" Visibility="Visible" FontSize="48"/>
+                        <Wpf:WebView2 Grid.Column="0" Grid.Row="0" x:Name="WebBrowserMain" Source="http://aedfunlimited.ddns.net:25569" Grid.ColumnSpan="2" Margin="0,0,-0.4,-0.2" />
+                        <Label x:Name="IWEBVIEW_LABEL" Content="INICIALIZANDO" VerticalAlignment="Top" Background="{x:Null}" FontFamily="Candara" Visibility="Visible" FontSize="48" Grid.ColumnSpan="2" Margin="0,0,-0.4,0"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Logs" FontSize="16">
@@ -121,7 +134,8 @@
                 </TabItem>
             </TabControl>
         </Grid>
-        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Background="LightBlue">
+        <!-- Painel esquerdo -->
+        <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Background="LightBlue" ZIndex="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100*"/>
             </Grid.ColumnDefinitions>
