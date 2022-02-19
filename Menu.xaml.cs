@@ -2,11 +2,13 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using Microsoft.VisualBasic.Devices;
 using MessageBox = System.Windows.MessageBox;
@@ -249,39 +251,47 @@ namespace LauncherV1
         {
             new Thread(() =>
             {
-
-                if (!Directory.Exists(MinecraftLauncher.base_Path + "/texturepacks"))
+                try
                 {
-                    Directory.CreateDirectory(MinecraftLauncher.base_Path + "/texturepacks");
+                    if (!Directory.Exists(MinecraftLauncher.base_Path + "/texturepacks"))
+                    {
+                        Directory.CreateDirectory(MinecraftLauncher.base_Path + "/texturepacks");
+                    }
+
+                    WebClient webClient = new WebClient();
+                    webClient.DownloadProgressChanged += (object send, DownloadProgressChangedEventArgs ee) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PAddonDownloader.Visibility = Visibility.Visible;
+                            LAddonStatus.Visibility = Visibility.Visible;
+                            PAddonDownloader.Value = ee.ProgressPercentage;
+                            LAddonStatus.Content = ee.BytesReceived + " - " + ee.TotalBytesToReceive;
+                        });
+                    };
+
+                    webClient.DownloadFileCompleted += (object snd, AsyncCompletedEventArgs ee) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PAddonDownloader.Visibility = Visibility.Hidden;
+                            LAddonStatus.Visibility = Visibility.Hidden;
+                        });
+                    };
+
+                    webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/textures/Faithful.zip", MinecraftLauncher.base_Path + "/texturepacks/Faithful.zip").Wait();
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        BTexturePackDownload.Content += " OK";
+                    });
+                }
+                catch (Exception exception)
+                {
+                    ConsoleText.AppendText("TexturePack Erro:" + exception.Message);
                 }
 
-                WebClient webClient = new WebClient();
-                webClient.DownloadProgressChanged += (object send, DownloadProgressChangedEventArgs ee) =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        PAddonDownloader.Visibility = Visibility.Visible;
-                        LAddonStatus.Visibility = Visibility.Visible;
-                        PAddonDownloader.Value = ee.ProgressPercentage;
-                        LAddonStatus.Content = ee.BytesReceived + " - " + ee.TotalBytesToReceive;
-                    });
-                };
-
-                webClient.DownloadFileCompleted += (object snd, AsyncCompletedEventArgs ee) =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        PAddonDownloader.Visibility = Visibility.Hidden;
-                        LAddonStatus.Visibility = Visibility.Hidden;
-                    });
-                };
-
-                webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/textures/Faithful.zip", MinecraftLauncher.base_Path + "/texturepacks/Faithful.zip").Wait();
-
-                Dispatcher.Invoke(() =>
-                {
-                    BTexturePackDownload.Content += " OK";
-                });
+                
 
             }).Start();
         }
@@ -290,44 +300,96 @@ namespace LauncherV1
         {
             new Thread(() =>
             {
-                string b_path = MinecraftLauncher.base_Path + "/libraries/net/minecraftforge/minecraftforge/7.8.1.738";
-                if (!Directory.Exists(b_path))
+                try
                 {
-                    Directory.CreateDirectory(b_path);
+                    string b_path = MinecraftLauncher.base_Path + "/libraries/net/minecraftforge/minecraftforge/7.8.1.738";
+                    if (!Directory.Exists(b_path))
+                    {
+                        Directory.CreateDirectory(b_path);
+                    }
+
+
+                    WebClient webClient = new WebClient();
+                    webClient.DownloadProgressChanged += (object send, DownloadProgressChangedEventArgs ee) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PAddonDownloader.Visibility = Visibility.Visible;
+                            LAddonStatus.Visibility = Visibility.Visible;
+                            PAddonDownloader.Value = ee.ProgressPercentage;
+                            LAddonStatus.Content = ee.BytesReceived + " - " + ee.TotalBytesToReceive;
+                        });
+                    };
+
+                    webClient.DownloadFileCompleted += (object snd, AsyncCompletedEventArgs ee) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PAddonDownloader.Visibility = Visibility.Hidden;
+                            LAddonStatus.Visibility = Visibility.Hidden;
+                        });
+                    };
+
+                    webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/shaders.jar", b_path + "/minecraftforge-7.8.1.738.jar").Wait();
+
+                    Dispatcher.Invoke(() =>
+                    {
+
+                    });
                 }
-
-
-                WebClient webClient = new WebClient();
-                webClient.DownloadProgressChanged += (object send, DownloadProgressChangedEventArgs ee) =>
+                catch (Exception exception)
                 {
-                    Dispatcher.Invoke(() =>
-                    {
-                        PAddonDownloader.Visibility = Visibility.Visible;
-                        LAddonStatus.Visibility = Visibility.Visible;
-                        PAddonDownloader.Value = ee.ProgressPercentage;
-                        LAddonStatus.Content = ee.BytesReceived + " - " + ee.TotalBytesToReceive;
-                    });
-                };
-
-                webClient.DownloadFileCompleted += (object snd, AsyncCompletedEventArgs ee) =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        PAddonDownloader.Visibility = Visibility.Hidden;
-                        LAddonStatus.Visibility = Visibility.Hidden;
-                    });
-                };
-
-                webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/shaders.jar", b_path + "/minecraftforge-7.8.1.738.jar").Wait();
-
-                Dispatcher.Invoke(() =>
-                {
-
-                });
+                    ConsoleText.AppendText("Shaders Erro:" + exception.Message);
+                }
+                
 
             }).Start();
         }
 
+        private void BMatmosInstall_Click(object sender, RoutedEventArgs e)
+        {
+            new Thread(() =>
+            {
+                try
+                {
+                    string b_path = MinecraftLauncher.base_Path;
+
+                    if (!Directory.Exists(b_path))
+                    {
+                        Directory.CreateDirectory(b_path);
+                    }
+
+
+                    WebClient webClient = new WebClient();
+                    webClient.DownloadProgressChanged += (object send, DownloadProgressChangedEventArgs ee) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PAddonDownloader.Visibility = Visibility.Visible;
+                            LAddonStatus.Visibility = Visibility.Visible;
+                            PAddonDownloader.Value = ee.ProgressPercentage;
+                            LAddonStatus.Content = ee.BytesReceived + " - " + ee.TotalBytesToReceive;
+                        });
+                    };
+
+                    webClient.DownloadFileCompleted += (object snd, AsyncCompletedEventArgs ee) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            PAddonDownloader.Visibility = Visibility.Hidden;
+                            LAddonStatus.Visibility = Visibility.Hidden;
+                        });
+                    };
+
+                    webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/_addons/matmos.zip", b_path + "/matmos.zip").Wait();
+                    ZipFile.ExtractToDirectory(String.Format("{0}/matmos.zip", b_path), b_path);
+                }
+                catch (Exception exception)
+                {
+                    ConsoleText.AppendText("Matmos Erro:"+exception.Message);
+                }
+            }).Start();
+        }
 
         private void Navigate_discord_link(object sender, RequestNavigateEventArgs e)
         {
@@ -337,5 +399,14 @@ namespace LauncherV1
             Painel_Direito.Visibility = Visibility.Visible;
             WebBrowserMain.Source = new Uri("https://discord.gg/WsWb56jfBw");
         }
+
+        private void Password_Press_Enter(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Button_Click_1(new Object(), new RoutedEventArgs());
+            }
+        }
+
     }
 }

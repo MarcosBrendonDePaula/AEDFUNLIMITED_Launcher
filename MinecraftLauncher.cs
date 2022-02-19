@@ -87,6 +87,7 @@ namespace ML
 
         public Process minecraft_process;
         public static MinecraftPath mpath;
+        
         public static string jpath = MinecraftLauncher.base_Path + "/runtime/bin/java.exe";
         private CMLauncher launcher;
 
@@ -169,6 +170,55 @@ namespace ML
             OnConsoleAppend(log);
 
         }
+
+        public void DownloadVenv(bool is_32 = false)
+        {
+            try
+            {
+                var config = LauncherConfig.Make();
+                if (config.Jpath.Length != 0)
+                {
+                    return;
+                }
+
+                OnCoreUpdate(new Core_Event()
+                {
+                    message = "Obtendo o Java",
+                    status = 0
+                });
+
+                WebClient webClient = new WebClient();
+                webClient.DownloadProgressChanged += ProgressUpdate;
+
+
+                if (is_32)
+                {
+                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/_addons/venv/32.zip", MinecraftLauncher.base_site)), String.Format("{0}/venv.zip", MinecraftLauncher.base_Path)).Wait();
+                }
+                else
+                {
+                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/_addons/venv/64.zip", MinecraftLauncher.base_site)), String.Format("{0}/venv.zip", MinecraftLauncher.base_Path)).Wait();
+                }
+                
+                OnCoreUpdate(new Core_Event()
+                {
+                    message = "Instalando venv",
+                    status = 0
+                });
+
+                ZipFile.ExtractToDirectory(String.Format("{0}/venv.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path + "/runtime");
+                File.Delete(String.Format("{0}/venv.zip", MinecraftLauncher.base_Path));
+                
+                config.Jpath = MinecraftLauncher.base_Path + "/runtime/bin/java.exe";
+                config.Save();
+            }
+            catch (Exception e)
+            {
+                CoreLogg("Erro ao instalar o java:" + e.Message);
+            }
+           
+        }
+        
         public void Basic_Check_Download()
         {
             try
@@ -192,7 +242,7 @@ namespace ML
                     }
                 }
 
-                if (exist == 0)
+                if (exist == 0 )
                 {
                     OnCoreUpdate(new Core_Event()
                     {
@@ -208,12 +258,16 @@ namespace ML
 
                     OnCoreUpdate(new Core_Event()
                     {
-                        message = "installing",
+                        message = "Instalando",
                         status = 0
                     });
                     ZipFile.ExtractToDirectory(String.Format("{0}/base.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path);
                     File.Delete(String.Format("{0}/base.zip", MinecraftLauncher.base_Path));
+
+                    DownloadVenv(x86);
+
                     CoreReady = true;
+
 
                     OnCoreUpdate(new Core_Event()
                     {
@@ -223,15 +277,19 @@ namespace ML
 
                     OnCoreUpdate(new Core_Event()
                     {
-                        message = "Play",
+                        message = "JOGAR",
                         status = 1
                     });
                 }
                 else
                 {
+                    if (!Directory.Exists(MinecraftLauncher.base_Path + "/runtime/bin"))
+                    {
+                        DownloadVenv(x86);
+                    }
                     OnCoreUpdate(new Core_Event()
                     {
-                        message = "Play",
+                        message = "JOGAR",
                         status = 0
                     });
                 }

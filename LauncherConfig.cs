@@ -1,14 +1,18 @@
-﻿using ML;
+﻿using System;
+using ML;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
+using CmlLib.Core.Files;
+using CmlLib.Core.Installer;
 using Org.BouncyCastle.Utilities.Encoders;
 
 namespace LauncherV1
 {
     class LauncherConfig
     {
+        public static MJava jvcheck = new MJava();
         public static LauncherConfig obj = null;
 
         public static LauncherConfig Make()
@@ -57,7 +61,7 @@ namespace LauncherV1
 
             if (!File.Exists((string)config["Jpath"]))
             {
-                Jpath = MinecraftLauncher.base_Path + "/runtime/bin/java.exe";
+                Jpath = "";
             }
 
             MAX_RAM = (int)config["MAX_RAM"];
@@ -71,7 +75,7 @@ namespace LauncherV1
             this.config = new JObject();
             this.config["Email"] = this.Email = "";
             this.config["Senha"] = this.Senha = "";
-            this.config["Jpath"] = this.Jpath = MinecraftLauncher.jpath;
+            this.config["Jpath"] = this.Jpath = "";
             this.config["MAX_RAM"] = this.MAX_RAM = 1024;
             this.config["Args"] = this.Args = "";
             this.config["Maxlogs"] = this.MaxLogs = 2000;
