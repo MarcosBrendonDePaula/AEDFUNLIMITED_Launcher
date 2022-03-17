@@ -45,7 +45,7 @@ namespace LauncherV1
 
             var content = new FormUrlEncodedContent(this.fields);
 
-            var response = await client.PostAsync(MinecraftLauncher.base_site + "/login", content);
+            var response = await client.PostAsync(MinecraftLauncher.BaseSite + "/login", content);
 
             var responseString = await response.Content.ReadAsStringAsync();
             this.response = JObject.Parse(responseString);

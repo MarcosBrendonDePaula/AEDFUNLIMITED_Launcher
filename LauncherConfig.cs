@@ -1,12 +1,9 @@
-﻿using System;
-using ML;
+﻿using CmlLib.Core.Installer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Utilities.Encoders;
 using System.IO;
 using System.Text;
-using CmlLib.Core.Files;
-using CmlLib.Core.Installer;
-using Org.BouncyCastle.Utilities.Encoders;
 
 namespace LauncherV1
 {
@@ -79,6 +76,7 @@ namespace LauncherV1
             this.config["MAX_RAM"] = this.MAX_RAM = 1024;
             this.config["Args"] = this.Args = "";
             this.config["Maxlogs"] = this.MaxLogs = 2000;
+
 
             if (!File.Exists(path + "/Launcher_Config.json"))
             {

@@ -128,6 +128,7 @@
                                     <Label x:Name="LAddonStatus" Content="Label"  Visibility="Hidden" Margin="234,9.8,9.8,10.8" Grid.Row="1" FontSize="16" FontFamily="Montserrat SemiBold"/>
                                     <Button x:Name="BShadersInstall" Content="Shaders" HorizontalAlignment="Left" Margin="142,10,0,0" VerticalAlignment="Top" Width="114" Click="BShadersInstall_Click" />
                                     <Button x:Name="BShadersInstall_Copy" Content="Matmos" HorizontalAlignment="Left" Margin="142,60,0,0" VerticalAlignment="Top" Width="114" Click="BMatmosInstall_Click" />
+                                    <Button Content="Reset Webview" HorizontalAlignment="Left" Margin="10,223,0,0" VerticalAlignment="Top" Width="246" Click="ResetWebview"/>
                                 </Grid>
                             </TabItem>
                         </TabControl>
@@ -200,6 +201,7 @@
 
                 <ProgressBar Grid.Row="3" x:Name="BProgress" Height="Auto" Margin="10,0,10,0"></ProgressBar>
                 <Label Grid.Row="3" x:Name="Pencent_Label" Content="0%" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,10,0"/>
+                <Label x:Name="VersionViwer" Grid.Row="4" VerticalAlignment="Bottom" HorizontalAlignment="Left">v0.0</Label>
             </Grid>
         </Grid>
     </Grid>

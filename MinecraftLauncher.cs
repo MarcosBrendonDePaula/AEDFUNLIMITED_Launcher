@@ -1,20 +1,21 @@
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using LauncherV1;
+using LauncherV1.Properties;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using LauncherV1.Properties;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Win32;
+using ZipFile = System.IO.Compression.ZipFile;
 
 
 namespace ML
@@ -26,22 +27,23 @@ namespace ML
     }
     class MinecraftLauncher
     {
-        private static MinecraftLauncher obj = null;
+        private static MinecraftLauncher _obj = null;
 
         public static MinecraftLauncher Make()
         {
-            if (MinecraftLauncher.obj == null)
+            if (MinecraftLauncher._obj == null)
             {
-                MinecraftLauncher.obj = new MinecraftLauncher();
+                MinecraftLauncher._obj = new MinecraftLauncher();
             }
 
-            return MinecraftLauncher.obj;
+            return MinecraftLauncher._obj;
         }
 
         //events
         public event EventHandler HprogressBar;
         public event EventHandler HCoreUpdate;
         public event EventHandler HConsoleAppend;
+        private static readonly HttpClient client = new HttpClient();
 
         protected virtual void OnConsoleAppend(Core_Event e)
         {
@@ -72,24 +74,26 @@ namespace ML
             OnDownloadProgressChange(sender, args);
         }
 
-        public static string base_Path = Directory.GetCurrentDirectory() + @"/AEDFCLIENT";
-        public static string base_ip   = Resources.IPHOST;
-        
-        
+        public static string BasePath = Directory.GetCurrentDirectory() + @"/AEDFCLIENT";
+        public static string BaseIp = Resources.IPHOST;
+
         //public static string base_ip = "aedfunlimited.ddns.net";
-        public static string base_site = String.Format("http://{0}:25569", base_ip);
+        public static string BaseSite = String.Format("http://{0}:25569", BaseIp);
         public static string User = "";
         public static string Token = "";
-        public static bool x86 = false, x64 = false;
+        public static string Version = "1.2.1.2";
+        public static bool X86 = false, X64 = false;
 
+        public static bool crashed = false;
+        public static string seslog = "";
 
         public static bool CoreReady = false;
 
-        public Process minecraft_process;
-        public static MinecraftPath mpath;
-        
-        public static string jpath = MinecraftLauncher.base_Path + "/runtime/bin/java.exe";
-        private CMLauncher launcher;
+        public Process MinecraftProcess;
+        public static MinecraftPath Mpath;
+
+        public static string Jpath = MinecraftLauncher.BasePath + "/runtime/bin/java.exe";
+        private CMLauncher _launcher;
 
         private void CheckExistWebview()
         {
@@ -100,39 +104,39 @@ namespace ML
             }
             catch (Exception e)
             {
-                CoreLogg("ERR:" + e.Message);
+                CoreLogg("Web view não localizado:");
             }
 
-            //detect if system is 64bits
             try
-            { 
-                
-                var temp = (string) Registry.LocalMachine.OpenSubKey(
+            {
+
+                var temp = (string)Registry.LocalMachine.OpenSubKey(
                     @"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
-                MinecraftLauncher.x64 = true;
-                if(version == null)
-                    version = temp;
-            }
-            catch (Exception e)
-            {
-                CoreLogg("ERR:" + e.Message);
-            }
-            
-            //detect if system is 32bits
-            try
-            {
-                var temp = (string) Registry.LocalMachine.OpenSubKey(
-                    @"\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
-                MinecraftLauncher.x86 = true;
                 if (version == null)
                     version = temp;
             }
-            catch (Exception e)
+            catch (Exception) { }
+
+            try
             {
-                CoreLogg("ERR:" + e.Message);
+                var temp = (string)Registry.LocalMachine.OpenSubKey(
+                    @"\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
+                if (version == null)
+                    version = temp;
+            }
+            catch (Exception ) { }
+
+
+            if (System.Environment.Is64BitOperatingSystem)
+            {
+                MinecraftLauncher.X64 = true;
+            }
+            else
+            {
+                MinecraftLauncher.X86 = true;
             }
 
-            if (version == null && !MinecraftLauncher.x86 && !MinecraftLauncher.x64)
+            if (version == null)
             {
                 try
                 {
@@ -143,10 +147,12 @@ namespace ML
                     });
                     var webClient = new WebClient();
                     webClient.DownloadProgressChanged += ProgressUpdate;
-                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.base_site)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.base_Path)).Wait();
-                    
+                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.BaseSite)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.BasePath)).Wait();
+
                     var installer = new Process();
-                    installer.StartInfo = new ProcessStartInfo(base_Path + "/EDGRUNTIME.exe", "/silent /install");
+                    installer.StartInfo.FileName = BasePath + "/EDGRUNTIME.exe";
+                    installer.StartInfo.Arguments = "/silent /install";
+                    installer.StartInfo.UseShellExecute = false;
                     OnCoreUpdate(new Core_Event()
                     {
                         message = "Instalando o WebView2 1/2\n\tAGUARDE...",
@@ -155,14 +161,13 @@ namespace ML
 
                     installer.Start();
                     installer.WaitForExit();
-                    Process.Start(Environment.CurrentDirectory + "\\"+ Process.GetCurrentProcess().ProcessName+".exe");
+                    Process.Start(Environment.CurrentDirectory + "\\" + Process.GetCurrentProcess().ProcessName + ".exe");
                     Process.GetCurrentProcess().Kill();
                 }
                 catch (Exception e)
                 {
                     MessageBox.Show("ERRO ao Intstalar o webview2\n tente novamente".ToUpper(), "INFO!", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Console.WriteLine("Erro ao instalar browser");
-                    CoreLogg("ERR:"+e.Message);
+                    CoreLogg("ERR:" + e.ToString());
                 }
             }
             var log = new Core_Event();
@@ -171,10 +176,19 @@ namespace ML
 
         }
 
-        public void DownloadVenv(bool is_32 = false)
+        public void DownloadVenv(bool is32 = false)
         {
             try
             {
+
+
+                int exist = 1;
+                exist = exist * (Directory.Exists(MinecraftLauncher.BasePath + "/runtime") ? 1 : 0);
+                if (exist == 1)
+                {
+                    Directory.Delete(MinecraftLauncher.BasePath + "/runtime", true);
+                }
+                Directory.CreateDirectory(MinecraftLauncher.BasePath + "/runtime");
                 var config = LauncherConfig.Make();
                 if (config.Jpath.Length != 0)
                 {
@@ -190,35 +204,38 @@ namespace ML
                 WebClient webClient = new WebClient();
                 webClient.DownloadProgressChanged += ProgressUpdate;
 
-
-                if (is_32)
+                if (is32)
                 {
-                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/_addons/venv/32.zip", MinecraftLauncher.base_site)), String.Format("{0}/venv.zip", MinecraftLauncher.base_Path)).Wait();
+
+                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/JAVA32.zip", MinecraftLauncher.BaseSite)), String.Format("{0}/venv.zip", MinecraftLauncher.BasePath)).Wait();
+                    //webClient.DownloadFileTaskAsync(new Uri("http://aedfunlimitedfiles.freetzi.com/32.zip"), String.Format("{0}/venv.zip", MinecraftLauncher.BasePath)).Wait();
                 }
                 else
                 {
-                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/_addons/venv/64.zip", MinecraftLauncher.base_site)), String.Format("{0}/venv.zip", MinecraftLauncher.base_Path)).Wait();
+
+                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/JAVA64.zip", MinecraftLauncher.BaseSite)), String.Format("{0}/venv.zip", MinecraftLauncher.BasePath)).Wait();
+                    //webClient.DownloadFileTaskAsync(new Uri("http://aedfunlimitedfiles.freetzi.com/64.zip"), String.Format("{0}/venv.zip", MinecraftLauncher.BasePath)).Wait();
                 }
-                
+
                 OnCoreUpdate(new Core_Event()
                 {
                     message = "Instalando venv",
                     status = 0
                 });
 
-                ZipFile.ExtractToDirectory(String.Format("{0}/venv.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path + "/runtime");
-                File.Delete(String.Format("{0}/venv.zip", MinecraftLauncher.base_Path));
-                
-                config.Jpath = MinecraftLauncher.base_Path + "/runtime/bin/java.exe";
+                ZipFile.ExtractToDirectory(String.Format("{0}/venv.zip", MinecraftLauncher.BasePath), MinecraftLauncher.BasePath + "/runtime");
+                File.Delete(String.Format("{0}/venv.zip", MinecraftLauncher.BasePath));
+
+                config.Jpath = MinecraftLauncher.BasePath + "/runtime/bin/java.exe";
                 config.Save();
             }
             catch (Exception e)
             {
-                CoreLogg("Erro ao instalar o java:" + e.Message);
+                CoreLogg("Erro ao instalar o java:" + e.ToString());
             }
-           
+
         }
-        
+
         public void Basic_Check_Download()
         {
             try
@@ -231,18 +248,18 @@ namespace ML
                 });
 
                 int exist = 1;
-                exist = exist * (Directory.Exists(MinecraftLauncher.base_Path) ? 1 : 0);
+                exist = exist * (Directory.Exists(MinecraftLauncher.BasePath) ? 1 : 0);
                 if (exist == 1)
                 {
-                    var dirs = Directory.GetDirectories(MinecraftLauncher.base_Path);
+                    var dirs = Directory.GetDirectories(MinecraftLauncher.BasePath);
                     if (dirs.Length <= 5)
                     {
                         exist = 0;
-                        Directory.Delete(MinecraftLauncher.base_Path, true);
+                        Directory.Delete(MinecraftLauncher.BasePath, true);
                     }
                 }
 
-                if (exist == 0 )
+                if (exist == 0)
                 {
                     OnCoreUpdate(new Core_Event()
                     {
@@ -250,21 +267,21 @@ namespace ML
                         status = 0
                     });
 
-                    Directory.CreateDirectory(MinecraftLauncher.base_Path);
+                    Directory.CreateDirectory(MinecraftLauncher.BasePath);
                     WebClient webClient = new WebClient();
 
                     webClient.DownloadProgressChanged += ProgressUpdate;
-                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/versoes/base.zip", MinecraftLauncher.base_site)), String.Format("{0}/base.zip", MinecraftLauncher.base_Path)).Wait();
+                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/versoes/base.zip", MinecraftLauncher.BaseSite)), String.Format("{0}/base.zip", MinecraftLauncher.BasePath)).Wait();
 
                     OnCoreUpdate(new Core_Event()
                     {
                         message = "Instalando",
                         status = 0
                     });
-                    ZipFile.ExtractToDirectory(String.Format("{0}/base.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path);
-                    File.Delete(String.Format("{0}/base.zip", MinecraftLauncher.base_Path));
+                    ZipFile.ExtractToDirectory(String.Format("{0}/base.zip", MinecraftLauncher.BasePath), MinecraftLauncher.BasePath);
+                    File.Delete(String.Format("{0}/base.zip", MinecraftLauncher.BasePath));
 
-                    DownloadVenv(x86);
+                    DownloadVenv(X86);
 
                     CoreReady = true;
 
@@ -283,9 +300,9 @@ namespace ML
                 }
                 else
                 {
-                    if (!Directory.Exists(MinecraftLauncher.base_Path + "/runtime/bin"))
+                    if (!Directory.Exists(MinecraftLauncher.BasePath + "/runtime/bin") || LauncherConfig.Make().Jpath == "")
                     {
-                        DownloadVenv(x86);
+                        DownloadVenv(X86);
                     }
                     OnCoreUpdate(new Core_Event()
                     {
@@ -296,51 +313,52 @@ namespace ML
             }
             catch (Exception e)
             {
-                CoreLogg("ERR:" + e.Message);
+                CoreLogg("ERR:" + e.ToString());
             }
-            
+
         }
 
         public MinecraftLauncher()
         {
-            MinecraftLauncher.mpath = new MinecraftPath(MinecraftLauncher.base_Path, MinecraftLauncher.base_Path);
-            Console.WriteLine(MinecraftLauncher.mpath.Resource);
-            launcher = new CMLauncher(MinecraftLauncher.mpath);
-            launcher.FileChanged += (e) =>
+            MinecraftLauncher.Mpath = new MinecraftPath(MinecraftLauncher.BasePath, MinecraftLauncher.BasePath);
+            Console.WriteLine(MinecraftLauncher.Mpath.Resource);
+            _launcher = new CMLauncher(MinecraftLauncher.Mpath);
+            _launcher.FileChanged += (e) =>
             {
                 Console.WriteLine("[{0}] {1} - {2}/{3}", e.FileKind.ToString(), e.FileName, e.ProgressedFileCount, e.TotalFileCount);
             };
-            launcher.ProgressChanged += (s, e) =>
+            _launcher.ProgressChanged += (s, e) =>
             {
                 Console.WriteLine("{0}%", e.ProgressPercentage);
             };
             System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+
         }
 
         public async void SyncFilesStart()
         {
             try
             {
-                if (!File.Exists(MinecraftLauncher.base_Path + "/versions.json"))
+                if (!File.Exists(MinecraftLauncher.BasePath + "/versions.json"))
                 {
-                    var versionA = File.Create(MinecraftLauncher.base_Path + "/versions.json");
+                    var versionA = File.Create(MinecraftLauncher.BasePath + "/versions.json");
                     string temp = "{\"mods\":\"0.0\",\"coremods\":\"0.0\",\"config\":\"0.0\"}";
                     var array = Encoding.UTF8.GetBytes(temp);
                     versionA.Write(array, 0, array.Length);
                     versionA.Close();
-                    Directory.CreateDirectory(MinecraftLauncher.base_Path + "/mods");
-                    Directory.CreateDirectory(MinecraftLauncher.base_Path + "/coremods");
-                    Directory.CreateDirectory(MinecraftLauncher.base_Path + "/config");
+                    Directory.CreateDirectory(MinecraftLauncher.BasePath + "/mods");
+                    Directory.CreateDirectory(MinecraftLauncher.BasePath + "/coremods");
+                    Directory.CreateDirectory(MinecraftLauncher.BasePath + "/config");
                 }
 
                 JObject versaoAtual;
-                using (StreamReader reader = File.OpenText(MinecraftLauncher.base_Path + "/versions.json"))
+                using (StreamReader reader = File.OpenText(MinecraftLauncher.BasePath + "/versions.json"))
                 {
                     versaoAtual = (JObject)JToken.ReadFrom(new JsonTextReader(reader));
                 }
 
                 HttpClient client = new HttpClient();
-                var response = await client.GetAsync(MinecraftLauncher.base_site + "/mod");
+                var response = await client.GetAsync(MinecraftLauncher.BaseSite + "/mod");
                 var responseString = await response.Content.ReadAsStringAsync();
                 JObject nova = JObject.Parse(responseString);
 
@@ -355,18 +373,18 @@ namespace ML
 
                     try
                     {
-                        Directory.Delete(MinecraftLauncher.base_Path + "/mods", true);
+                        Directory.Delete(MinecraftLauncher.BasePath + "/mods", true);
                         WebClient webClient = new WebClient();
                         webClient.DownloadProgressChanged += ProgressUpdate;
-                        webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/mods.zip", MinecraftLauncher.base_site)), String.Format("{0}/mods.zip", MinecraftLauncher.base_Path)).Wait();
-                        ZipFile.ExtractToDirectory(String.Format("{0}/mods.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path);
+                        webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/mods.zip", MinecraftLauncher.BaseSite)), String.Format("{0}/mods.zip", MinecraftLauncher.BasePath)).Wait();
+                        ZipFile.ExtractToDirectory(String.Format("{0}/mods.zip", MinecraftLauncher.BasePath), MinecraftLauncher.BasePath);
                         versaoAtual["mods"] = (string)nova["mods"];
-                        File.WriteAllText(MinecraftLauncher.base_Path + "/versions.json", versaoAtual.ToString());
-                        File.Delete(String.Format("{0}/mods.zip", MinecraftLauncher.base_Path));
+                        File.WriteAllText(MinecraftLauncher.BasePath + "/versions.json", versaoAtual.ToString());
+                        File.Delete(String.Format("{0}/mods.zip", MinecraftLauncher.BasePath));
                     }
                     catch (Exception e)
                     {
-                        CoreLogg("ERR:" + e.Message);
+                        CoreLogg("ERR:" + e.ToString());
                     }
                 }
 
@@ -379,18 +397,18 @@ namespace ML
                     });
                     try
                     {
-                        Directory.Delete(MinecraftLauncher.base_Path + "/coremods", true);
+                        Directory.Delete(MinecraftLauncher.BasePath + "/coremods", true);
                         WebClient webClient = new WebClient();
                         webClient.DownloadProgressChanged += ProgressUpdate;
-                        webClient.DownloadFile(String.Format("{0}/coremods.zip", MinecraftLauncher.base_site), String.Format("{0}/coremods.zip", MinecraftLauncher.base_Path));
-                        ZipFile.ExtractToDirectory(String.Format("{0}/coremods.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path);
+                        webClient.DownloadFile(String.Format("{0}/coremods.zip", MinecraftLauncher.BaseSite), String.Format("{0}/coremods.zip", MinecraftLauncher.BasePath));
+                        ZipFile.ExtractToDirectory(String.Format("{0}/coremods.zip", MinecraftLauncher.BasePath), MinecraftLauncher.BasePath);
                         versaoAtual["coremods"] = (string)nova["coremods"];
-                        File.WriteAllText(MinecraftLauncher.base_Path + "/versions.json", versaoAtual.ToString());
-                        File.Delete(String.Format("{0}/coremods.zip", MinecraftLauncher.base_Path));
+                        File.WriteAllText(MinecraftLauncher.BasePath + "/versions.json", versaoAtual.ToString());
+                        File.Delete(String.Format("{0}/coremods.zip", MinecraftLauncher.BasePath));
                     }
                     catch (Exception e)
                     {
-                        CoreLogg("ERR:" + e.Message);
+                        CoreLogg("ERR:" + e.ToString());
                     }
 
                 }
@@ -400,70 +418,104 @@ namespace ML
                     CoreLogg("Download: Config");
                     try
                     {
-                        Directory.Delete(MinecraftLauncher.base_Path + "/config", true);
+                        Directory.Delete(MinecraftLauncher.BasePath + "/config", true);
                         var webClient = new WebClient();
                         webClient.DownloadProgressChanged += ProgressUpdate;
-                        webClient.DownloadFile(String.Format("{0}/config.zip", MinecraftLauncher.base_site), String.Format("{0}/config.zip", MinecraftLauncher.base_Path));
-                        ZipFile.ExtractToDirectory(String.Format("{0}/config.zip", MinecraftLauncher.base_Path), MinecraftLauncher.base_Path);
+                        webClient.DownloadFile(String.Format("{0}/config.zip", MinecraftLauncher.BaseSite), String.Format("{0}/config.zip", MinecraftLauncher.BasePath));
+                        ZipFile.ExtractToDirectory(String.Format("{0}/config.zip", MinecraftLauncher.BasePath), MinecraftLauncher.BasePath);
                         versaoAtual["config"] = (string)nova["config"];
-                        File.WriteAllText(MinecraftLauncher.base_Path + "/versions.json", versaoAtual.ToString());
-                        File.Delete(String.Format("{0}/config.zip", MinecraftLauncher.base_Path));
+                        File.WriteAllText(MinecraftLauncher.BasePath + "/versions.json", versaoAtual.ToString());
+                        File.Delete(String.Format("{0}/config.zip", MinecraftLauncher.BasePath));
                     }
                     catch (Exception e)
                     {
-                        CoreLogg("ERR:" + e.Message);
+                        CoreLogg("ERR:" + e.ToString());
                     }
-                    
+
                 }
 
                 OnCoreUpdate(new Core_Event()
                 {
-                    message = "Iniciando..",
+                    message = "INICIANDO...",
                     status = 0
                 });
 
-                await start();
-                minecraft_process.WaitForExit();
+                await Start();
+                MinecraftProcess.Exited += (sender, args) =>
+                {
+                    if (MinecraftLauncher.crashed)
+                    {
+                        sendCrashReport();
+                    }
+
+                    OnCoreUpdate(new Core_Event()
+                    {
+                        message = "JOGAR",
+                        status = 0
+                    });
+                };
 
                 OnCoreUpdate(new Core_Event()
                 {
-                    message = "Play",
+                    message = "ABERTO",
                     status = 0
                 });
+
             }
             catch (Exception e)
             {
-                CoreLogg("ERR:"+e.Message);
+                CoreLogg("ERR:" + e.ToString());
             }
-            
+
         }
 
-        private async Task<bool> start()
+        public async void sendCrashReport()
         {
             try
             {
+                var content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    {"crash", MinecraftLauncher.seslog},
+                });
+                var response = await client.PostAsync(MinecraftLauncher.BaseSite + "/crashreport", content);
+            }
+            catch (Exception e)
+            {
+                CoreLogg("Erro : " + e.ToString());
+                throw;
+            }
+
+        }
+
+        private async Task<bool> Start()
+        {
+            try
+            {
+                MinecraftLauncher.crashed = false;
+                MinecraftLauncher.seslog = "";
+
                 var config = LauncherConfig.Make();
                 var pathJava = config.Jpath;
-                var Bpath = base_Path;
+                var bpath = BasePath;
 
-                if (jpath.Contains(" "))
+                if (Jpath.Contains(" "))
                 {
                     pathJava = "\"" + pathJava + "\"";
-                    Bpath = "\"" + Bpath + "\"";
+                    bpath = "\"" + bpath + "\"";
                 }
-                
-                CoreLogg("B_PATH:" + Bpath);
-                CoreLogg("J_PATH:"+pathJava);
-                
+
+                CoreLogg("B_PATH:" + bpath);
+                CoreLogg("J_PATH:" + pathJava);
+
 
                 var args = new string[4];
-                args[0] = "-DmyArgument=" + MinecraftLauncher.Token + "::" + MinecraftLauncher.base_ip + ":25569" + "::" + MinecraftLauncher.User;
-                args[1] = "-Dminecraft.applet.TargetDirectory=" + Bpath;
+                args[0] = "-DmyArgument=" + MinecraftLauncher.Token + "::" + MinecraftLauncher.BaseIp + ":25569" + "::" + MinecraftLauncher.User;
+                args[1] = "-Dminecraft.applet.TargetDirectory=" + bpath;
                 //Ativando fps++
                 args[2] = "-Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true";
                 args[3] = config.Args;
 
-                
+
                 System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
 
@@ -480,11 +532,21 @@ namespace ML
 
                 CoreLogg("User: " + MinecraftLauncher.User);
 
-                this.minecraft_process = await launcher.CreateProcessAsync("1.5.2-Forge7.8.1.738", launchOption);
+                this.MinecraftProcess = await _launcher.CreateProcessAsync("1.5.2-Forge7.8.1.738", launchOption);
 
-                var processUtil = new CmlLib.Utils.ProcessUtil(this.minecraft_process);
+                var processUtil = new CmlLib.Utils.ProcessUtil(this.MinecraftProcess);
                 processUtil.OutputReceived += (s, e) =>
                 {
+                    if (e.Contains("Minecraft has crashed!"))
+                    {
+                        MinecraftLauncher.crashed = true;
+                    }
+
+                    if (MinecraftLauncher.crashed)
+                    {
+                        MinecraftLauncher.seslog += e;
+                    }
+
                     CoreLogg(e);
                 };
                 processUtil.StartWithEvents();
@@ -493,7 +555,7 @@ namespace ML
             }
             catch (Exception e)
             {
-                CoreLogg("Erro : " + e.Message);
+                CoreLogg("Erro : " + e.ToString());
                 return false;
             }
         }

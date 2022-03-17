@@ -1,4 +1,5 @@
-﻿using ML;
+﻿using Microsoft.VisualBasic.Devices;
+using ML;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -6,11 +7,9 @@ using System.IO.Compression;
 using System.Net;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Navigation;
-using Microsoft.VisualBasic.Devices;
 using MessageBox = System.Windows.MessageBox;
 
 namespace LauncherV1
@@ -25,6 +24,9 @@ namespace LauncherV1
 
         public MainWindow()
         {
+            Update LauncherUpdate = Update.Make();
+            LauncherUpdate.checkUpdate();
+
             InitializeComponent();
 
             if (config.Email != "")
@@ -45,7 +47,7 @@ namespace LauncherV1
             try
             {
                 WebClient webClient = new WebClient();
-                webClient.DownloadData(MinecraftLauncher.base_site);
+                webClient.DownloadData(MinecraftLauncher.BaseSite);
                 OFFLINE_MESSAGE.Visibility = Visibility.Hidden;
                 Painel_Direito.Visibility = Visibility.Visible;
             }
@@ -54,8 +56,8 @@ namespace LauncherV1
                 Painel_Direito.Visibility = Visibility.Hidden;
                 OFFLINE_MESSAGE.Visibility = Visibility.Visible;
             }
-            
 
+            VersionViwer.Content = "v" + MinecraftLauncher.Version;
             new Thread(mine.Basic_Check_Download).Start();
         }
 
@@ -105,11 +107,12 @@ namespace LauncherV1
             };
             Dispatcher.Invoke(atualiza);
         }
-        
+
         //play button function
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if ((string)Bplay.Content != "Play")
+
+            if ((string)Bplay.Content != "JOGAR")
             {
                 MessageBox.Show("Aguarde A instalação terminar", "INFO");
                 return;
@@ -144,7 +147,7 @@ namespace LauncherV1
 
                     MinecraftLauncher.User = (string)response["username"];
                     MinecraftLauncher.Token = (string)response["token"];
-                    WebBrowserMain.Source = new Uri(String.Format("{0}/launcher/auth/{1}/{2}", MinecraftLauncher.base_site,
+                    WebBrowserMain.Source = new Uri(String.Format("{0}/launcher/auth/{1}/{2}", MinecraftLauncher.BaseSite,
                         MinecraftLauncher.Token, MinecraftLauncher.User));
                     BLogar.Content = "LOGADO!";
                     UserBtn.Visibility = Visibility.Visible;
@@ -253,9 +256,9 @@ namespace LauncherV1
             {
                 try
                 {
-                    if (!Directory.Exists(MinecraftLauncher.base_Path + "/texturepacks"))
+                    if (!Directory.Exists(MinecraftLauncher.BasePath + "/texturepacks"))
                     {
-                        Directory.CreateDirectory(MinecraftLauncher.base_Path + "/texturepacks");
+                        Directory.CreateDirectory(MinecraftLauncher.BasePath + "/texturepacks");
                     }
 
                     WebClient webClient = new WebClient();
@@ -279,7 +282,7 @@ namespace LauncherV1
                         });
                     };
 
-                    webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/textures/Faithful.zip", MinecraftLauncher.base_Path + "/texturepacks/Faithful.zip").Wait();
+                    webClient.DownloadFileTaskAsync(MinecraftLauncher.BaseSite + "/textures/Faithful.zip", MinecraftLauncher.BasePath + "/texturepacks/Faithful.zip").Wait();
 
                     Dispatcher.Invoke(() =>
                     {
@@ -288,10 +291,10 @@ namespace LauncherV1
                 }
                 catch (Exception exception)
                 {
-                    ConsoleText.AppendText("TexturePack Erro:" + exception.Message);
+                    ConsoleText.AppendText("TexturePack Erro:" + exception.ToString());
                 }
 
-                
+
 
             }).Start();
         }
@@ -302,7 +305,7 @@ namespace LauncherV1
             {
                 try
                 {
-                    string b_path = MinecraftLauncher.base_Path + "/libraries/net/minecraftforge/minecraftforge/7.8.1.738";
+                    string b_path = MinecraftLauncher.BasePath + "/libraries/net/minecraftforge/minecraftforge/7.8.1.738";
                     if (!Directory.Exists(b_path))
                     {
                         Directory.CreateDirectory(b_path);
@@ -330,7 +333,7 @@ namespace LauncherV1
                         });
                     };
 
-                    webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/shaders.jar", b_path + "/minecraftforge-7.8.1.738.jar").Wait();
+                    webClient.DownloadFileTaskAsync(MinecraftLauncher.BaseSite + "/shaders.jar", b_path + "/minecraftforge-7.8.1.738.jar").Wait();
 
                     Dispatcher.Invoke(() =>
                     {
@@ -339,9 +342,9 @@ namespace LauncherV1
                 }
                 catch (Exception exception)
                 {
-                    ConsoleText.AppendText("Shaders Erro:" + exception.Message);
+                    ConsoleText.AppendText("Shaders Erro:" + exception.ToString());
                 }
-                
+
 
             }).Start();
         }
@@ -352,7 +355,7 @@ namespace LauncherV1
             {
                 try
                 {
-                    string b_path = MinecraftLauncher.base_Path;
+                    string b_path = MinecraftLauncher.BasePath;
 
                     if (!Directory.Exists(b_path))
                     {
@@ -381,12 +384,12 @@ namespace LauncherV1
                         });
                     };
 
-                    webClient.DownloadFileTaskAsync(MinecraftLauncher.base_site + "/_addons/matmos.zip", b_path + "/matmos.zip").Wait();
+                    webClient.DownloadFileTaskAsync(MinecraftLauncher.BaseSite + "/_addons/matmos.zip", b_path + "/matmos.zip").Wait();
                     ZipFile.ExtractToDirectory(String.Format("{0}/matmos.zip", b_path), b_path);
                 }
                 catch (Exception exception)
                 {
-                    ConsoleText.AppendText("Matmos Erro:"+exception.Message);
+                    ConsoleText.AppendText("Matmos Erro:" + exception.ToString());
                 }
             }).Start();
         }
@@ -408,5 +411,9 @@ namespace LauncherV1
             }
         }
 
+        private void ResetWebview(object sender, RoutedEventArgs e)
+        {
+            WebBrowserMain.Source = new Uri(String.Format("{0}", MinecraftLauncher.BaseSite));
+        }
     }
 }
