@@ -62,8 +62,14 @@ namespace LauncherV1
 
                         ZipFile.ExtractToDirectory(arguments[2] + "\\temp\\temp.zip", arguments[2]);
 
+                        var temp = arguments[2] + "\\" + Process.GetCurrentProcess().ProcessName + ".exe";
+                        if (temp.Contains(" "))
+                        {
+                            temp += "\"" + temp + "\"";
+                        }
+
                         Process process = new Process();
-                        process.StartInfo.FileName = (arguments[2] + "\\" + Process.GetCurrentProcess().ProcessName + ".exe");
+                        process.StartInfo.FileName = temp;
                         process.StartInfo.UseShellExecute = false;
                         process.Start();
 
@@ -99,9 +105,14 @@ namespace LauncherV1
                                 var file_inf = file.Split('\\');
                                 File.Copy(file, BasePath + "\\temp\\" + file_inf[file_inf.Length - 1]);
                             }
+                            var temp = BasePath + "\\temp\\" + Process.GetCurrentProcess().ProcessName + ".exe";
+                            if(temp.Contains(" "))
+                            {
+                                temp += "\"" + temp + "\"";
+                            }
 
                             Process process = new Process();
-                            process.StartInfo.FileName = BasePath + "\\temp\\" + Process.GetCurrentProcess().ProcessName + ".exe";
+                            process.StartInfo.FileName = temp;
                             process.StartInfo.Arguments = "update " + BasePath;
                             process.StartInfo.UseShellExecute = false;
 

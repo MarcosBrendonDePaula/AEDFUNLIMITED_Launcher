@@ -81,7 +81,7 @@ namespace ML
         public static string BaseSite = String.Format("http://{0}:25569", BaseIp);
         public static string User = "";
         public static string Token = "";
-        public static string Version = "1.2.1.2";
+        public static string Version = "1.2.1.4";
         public static bool X86 = false, X64 = false;
 
         public static bool crashed = false;
@@ -97,6 +97,9 @@ namespace ML
 
         private void CheckExistWebview()
         {
+            MinecraftLauncher.X64 = System.Environment.Is64BitOperatingSystem;
+            MinecraftLauncher.X86 = !MinecraftLauncher.X64;
+            
             string version = null;
             try
             {
@@ -106,35 +109,26 @@ namespace ML
             {
                 CoreLogg("Web view não localizado:");
             }
-
+            if (version == "")
+                version = null;
             try
             {
-
-                var temp = (string)Registry.LocalMachine.OpenSubKey(
-                    @"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
                 if (version == null)
-                    version = temp;
+                {
+                    version = (string)Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
+                }
+
             }
             catch (Exception) { }
 
             try
             {
-                var temp = (string)Registry.LocalMachine.OpenSubKey(
-                    @"\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
                 if (version == null)
-                    version = temp;
+                {
+                    version = (string)Registry.LocalMachine.OpenSubKey(@"\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").GetValue("versionInfo");
+                }
             }
-            catch (Exception ) { }
-
-
-            if (System.Environment.Is64BitOperatingSystem)
-            {
-                MinecraftLauncher.X64 = true;
-            }
-            else
-            {
-                MinecraftLauncher.X86 = true;
-            }
+            catch (Exception) { }
 
             if (version == null)
             {
@@ -145,9 +139,20 @@ namespace ML
                         message = "Downloading WebView2",
                         status = -900
                     });
+
                     var webClient = new WebClient();
                     webClient.DownloadProgressChanged += ProgressUpdate;
-                    webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.BaseSite)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.BasePath)).Wait();
+
+                    if (MinecraftLauncher.X64 )
+                    {
+                        webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME86.exe", MinecraftLauncher.BaseSite)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.BasePath)).Wait();
+                    }
+                    else
+                    {
+                        webClient.DownloadFileTaskAsync(new Uri(String.Format("{0}/EDGRUNTIME64.exe", MinecraftLauncher.BaseSite)), String.Format("{0}/EDGRUNTIME.exe", MinecraftLauncher.BasePath)).Wait();
+                        
+                    }
+                    
 
                     var installer = new Process();
                     installer.StartInfo.FileName = BasePath + "/EDGRUNTIME.exe";
