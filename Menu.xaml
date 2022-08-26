@@ -19,7 +19,7 @@
     TextOptions.TextRenderingMode="Auto"
     Title="UNLIMITED LAUNCHER"
     Background="{DynamicResource MaterialDesignPaper}"
-    FontFamily="{DynamicResource MaterialDesignFont}" ResizeMode="CanResizeWithGrip" Icon="icone.png" SizeToContent="Width" Width="881.6" Height="565.8">
+    FontFamily="{DynamicResource MaterialDesignFont}" ResizeMode="CanResizeWithGrip" Icon="/Resources/ICON.png" SizeToContent="Width" Width="881.6" Height="565.8">
 
     <Grid x:Name="Grid_Principal" MinWidth="800">
         <Grid.ColumnDefinitions>
@@ -43,7 +43,7 @@
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Image Grid.Column="1" Grid.Row="1"  Source="SemConexão.png"></Image>
+            <Image Grid.Column="1" Grid.Row="1"  Source="/Resources/NOCONNECTION.png"></Image>
             <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" FontSize="36" TextAlignment="Center" TextWrapping="Wrap" FontFamily="Montserrat SemiBold">
                 Sem Conexão.
                 <LineBreak/>

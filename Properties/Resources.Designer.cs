@@ -61,11 +61,41 @@ namespace LauncherV1.Properties {
         }
         
         /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ICON {
+            get {
+                object obj = ResourceManager.GetObject("ICON", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Icon semelhante a (Ícone).
+        /// </summary>
+        internal static System.Drawing.Icon ICONLAUNCHER {
+            get {
+                object obj = ResourceManager.GetObject("ICONLAUNCHER", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a aedfunlimited.ddns.net.
         /// </summary>
         internal static string IPHOST {
             get {
                 return ResourceManager.GetString("IPHOST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap NOCONNECTION {
+            get {
+                object obj = ResourceManager.GetObject("NOCONNECTION", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
