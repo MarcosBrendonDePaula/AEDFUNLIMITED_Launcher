@@ -127,10 +127,16 @@
   <data name="IPHOST" xml:space="preserve">
     <value>aedfunlimited.ddns.net</value>
   </data>
+  <data name="MINEVERSSION" xml:space="preserve">
+    <value>1.12.2-forge-14.23.5.2859</value>
+  </data>
   <data name="NOCONNECTION" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NOCONNECTION.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ServerIp" xml:space="preserve">
+  <data name="SERVERIP" xml:space="preserve">
     <value>aedfunlimited.ddns.net</value>
+  </data>
+  <data name="SERVERPORT" xml:space="preserve">
+    <value>25565</value>
   </data>
 </root>

@@ -81,7 +81,7 @@ namespace ML
         public static string BaseSite = String.Format("http://{0}:25569", BaseIp);
         public static string User = "";
         public static string Token = "";
-        public static string Version = "1.2.1.4";
+        public static string Version = "2.1";
         public static bool X86 = false, X64 = false;
 
         public static bool crashed = false;
@@ -513,12 +513,13 @@ namespace ML
                 CoreLogg("J_PATH:" + pathJava);
 
 
-                var args = new string[4];
+                var args = new string[5];
                 args[0] = "-DmyArgument=" + MinecraftLauncher.Token + "::" + MinecraftLauncher.BaseIp + ":25569" + "::" + MinecraftLauncher.User;
-                args[1] = "-Dminecraft.applet.TargetDirectory=" + bpath;
+                args[1] = String.Format("-Xmx{0}m", config.MAX_RAM);
+                args[2] = "-Dminecraft.applet.TargetDirectory=" + bpath;
                 //Ativando fps++
-                args[2] = "-Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true";
-                args[3] = config.Args;
+                args[3] = "-Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true";
+                args[4] = config.Args;
 
 
                 System.Net.ServicePointManager.DefaultConnectionLimit = 256;
@@ -527,17 +528,17 @@ namespace ML
                 var session = MSession.GetOfflineSession(MinecraftLauncher.User);
                 var launchOption = new MLaunchOption
                 {
-                    MaximumRamMb = config.MAX_RAM,
+                    //MaximumRamMb = config.MAX_RAM,
                     Session = session,
                     JVMArguments = args,
                     JavaPath = pathJava,
-                    ServerIp = Resources.ServerIp,
-                    ServerPort = 25565
+                    //ServerIp = Resources.SERVERIP,
+                    //ServerPort = Int32.Parse(Resources.SERVERPORT)
                 };
 
                 CoreLogg("User: " + MinecraftLauncher.User);
 
-                this.MinecraftProcess = await _launcher.CreateProcessAsync("1.5.2-Forge7.8.1.738", launchOption);
+                this.MinecraftProcess = await _launcher.CreateProcessAsync(Resources.MINEVERSSION, launchOption);
 
                 var processUtil = new CmlLib.Utils.ProcessUtil(this.MinecraftProcess);
                 processUtil.OutputReceived += (s, e) =>

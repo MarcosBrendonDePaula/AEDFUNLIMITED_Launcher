@@ -90,6 +90,15 @@ namespace LauncherV1.Properties {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a 1.12.2-forge-14.23.5.2859.
+        /// </summary>
+        internal static string MINEVERSSION {
+            get {
+                return ResourceManager.GetString("MINEVERSSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap NOCONNECTION {
@@ -102,9 +111,18 @@ namespace LauncherV1.Properties {
         /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a aedfunlimited.ddns.net.
         /// </summary>
-        internal static string ServerIp {
+        internal static string SERVERIP {
             get {
-                return ResourceManager.GetString("ServerIp", resourceCulture);
+                return ResourceManager.GetString("SERVERIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a 25565.
+        /// </summary>
+        internal static string SERVERPORT {
+            get {
+                return ResourceManager.GetString("SERVERPORT", resourceCulture);
             }
         }
     }
